@@ -1,47 +1,70 @@
 frappe.ui.form.on("BOM", {
-    item(frm) {
+    async item(frm) {
         if (!frm.doc.item) return;
 
-        frappe.msgprint("Fetching Material Requirement for: " + frm.doc.item);
-        //  check box check 
-         frm.set_value("with_operations", 1);
+        // Always check the checkbox
+        frm.set_value("with_operations", 1);
 
-        // Material Requirement ka document fetch karna
-        frappe.db.get_value("Material Requirement", { item_code: frm.doc.item }, "name")
-            .then(r => {
-                if (r.message && r.message.name) {
-                    let mr_name = r.message.name;
+        try {
+            // Fetch Material Requirement linked to this item
+            let r = await frappe.db.get_value("Material Requirement", { item_code: frm.doc.item }, "name");
+            if (!(r.message && r.message.name)) {
+                frappe.msgprint(`No Material Requirement found for item: ${frm.doc.item}`);
+                return;
+            }
 
-                    frappe.model.with_doc("Material Requirement", mr_name, function () {
-                        let mr = frappe.model.get_doc("Material Requirement", mr_name);
-                        
-                        // BOM items clear kar do
-                        frm.clear_table("items");
+            // Load the full Material Requirement document
+            let mr_name = r.message.name;
+            await frappe.model.with_doc("Material Requirement", mr_name);
+            let mr = frappe.model.get_doc("Material Requirement", mr_name);
 
-                        // Specifications se data copy karo
-                        (mr.specifications || []).forEach(row => {
-                            let child = frm.add_child("items");
-                            child.item_code = mr.item_code;
-                            child.item_name = mr.item_name;
+            // Clear and refill BOM items from MR specifications
+            frm.clear_table("items");
+            (mr.specifications || []).forEach(row => {
+                if(!row.material) return
+                let child = frm.add_child("items", {
+                    operation: frm.doc.with_operations ? row.operation : null,
+                    workstation : frm.doc.with_operations ? row.workstation : null ,
+                    item_code: row.material,
+                   
+                });
+            });
+            frm.refresh_field("items");
 
-                            // Agar with_operations checkbox checked hai tabhi operation set karna
-                            if (frm.doc.with_operations) {
-                                child.operation = row.operation;
-                            }
-                        });
-
-                        frm.refresh_field("items");
-                    });
-                } 
-                
-                else {
-                    frappe.msgprint("No Material Requirement found for item: " + frm.doc.item);
+            // Add Operations in Operation Table  
+            let unique_ops = new Set();
+            (mr.specifications || []).forEach(row => {
+                if (frm.doc.with_operations && row.operation) {
+                    unique_ops.add(row.operation);
                 }
             });
+            // Now add only unique operations
+            unique_ops.forEach(op => {
+                frm.add_child("operations", { operation: op ,});
+               
+            });
+
+            let unique_stn = new Set();
+            (mr.specifications || []).forEach(row => {
+                if (frm.doc.with_operations && row.workstation){
+                    unique_stn.add(row.workstation);
+                }
+            });
+
+            unique_stn.forEach(st => {
+                frm.add_child("operations" , {workstation : st})
+            })
+
+            frm.refresh_field("operations");
+
+        } catch (err) {
+            console.error(err);
+            frappe.msgprint("Error fetching Material Requirement");
+        }
     },
 
-    // Jab bhi checkbox change ho → child table refresh hoga
     with_operations(frm) {
+        // Just refresh items when checkbox is toggled
         frm.refresh_field("items");
     }
 });
