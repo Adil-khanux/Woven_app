@@ -1,0 +1,33 @@
+{
+ "attach_print": 0,
+ "channel": "Email",
+ "condition": "doc.status == \"To Deliver and Bill\"\r\n",
+ "creation": "2025-09-27 22:00:04.531652",
+ "days_in_advance": 0,
+ "docstatus": 0,
+ "doctype": "Notification",
+ "document_type": "Sales Order",
+ "enabled": 1,
+ "event": "Submit",
+ "idx": 0,
+ "is_standard": 1,
+ "message": "Dear Customer Please check your order details and apporved it.",
+ "message_type": "HTML",
+ "modified": "2025-10-28 11:50:23.806934",
+ "modified_by": "Administrator",
+ "module": "Woven App",
+ "name": "Order Details",
+ "owner": "Administrator",
+ "recipients": [
+  {
+   "condition": "",
+   "receiver_by_document_field": "",
+   "receiver_by_role": "GM"
+  }
+ ],
+ "send_system_notification": 1,
+ "send_to_all_assignees": 0,
+ "sender": "Adil Khan",
+ "sender_email": "8218adilkhan@gmail.com",
+ "subject": "Sales Order {{ doc.name }} - Approval Required"
+}

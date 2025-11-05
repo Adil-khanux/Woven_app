@@ -1,0 +1,275 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2025-09-09 18:03:52.035417",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "artwork_title",
+  "customer",
+  "expected_colors",
+  "usage_scope",
+  "column_break_ubfa",
+  "item",
+  "product_build",
+  "printing_process",
+  "print_side",
+  "dimensional_technical_tab",
+  "bag_length",
+  "print_area_height_mm",
+  "orientation",
+  "repeat_length_mm",
+  "bleed_mm",
+  "column_break_fpka",
+  "width_mm",
+  "print_area_width_mm",
+  "gusset_mm",
+  "repeat_width_mm",
+  "trap_mm",
+  "registration_on_marks",
+  "tab_3_tab",
+  "source_file",
+  "print_ready_pdf",
+  "preview_image",
+  "preflight_score",
+  "column_break_preh",
+  "color_separations",
+  "fonts_package",
+  "cylinder_layout",
+  "preflight_state",
+  "color_tab",
+  "color_spec",
+  "versioning_tab",
+  "version"
+ ],
+ "fields": [
+  {
+   "fieldname": "artwork_title",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Artwork Title",
+   "reqd": 1
+  },
+  {
+   "fieldname": "customer",
+   "fieldtype": "Link",
+   "label": "Customer",
+   "options": "Customer",
+   "reqd": 1
+  },
+  {
+   "fieldname": "item",
+   "fieldtype": "Link",
+   "label": "Item",
+   "options": "Item"
+  },
+  {
+   "fieldname": "product_build",
+   "fieldtype": "Select",
+   "label": "Product Build",
+   "options": "\nPlain\nLaminated\nBOPP\nWith Liner\nFIBC",
+   "reqd": 1
+  },
+  {
+   "fieldname": "printing_process",
+   "fieldtype": "Select",
+   "label": "Printing Process",
+   "options": "\nFlexo\nGravure\nDigital\nScreen",
+   "reqd": 1
+  },
+  {
+   "fieldname": "print_side",
+   "fieldtype": "Select",
+   "label": "Print Side",
+   "options": "\nSingle\nDouble",
+   "reqd": 1
+  },
+  {
+   "fieldname": "expected_colors",
+   "fieldtype": "Color",
+   "label": "Expected Colors",
+   "reqd": 1
+  },
+  {
+   "fieldname": "column_break_ubfa",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "usage_scope",
+   "fieldtype": "Select",
+   "label": "Usage Scope",
+   "options": "\nSample only\nCustomer-wide\nItem-specific\nContract-specific",
+   "reqd": 1
+  },
+  {
+   "fieldname": "dimensional_technical_tab",
+   "fieldtype": "Tab Break",
+   "label": "Dimensional & Technical"
+  },
+  {
+   "fieldname": "bag_length",
+   "fieldtype": "Float",
+   "label": "Length (mm)"
+  },
+  {
+   "fieldname": "width_mm",
+   "fieldtype": "Float",
+   "label": "Width (mm)"
+  },
+  {
+   "fieldname": "gusset_mm",
+   "fieldtype": "Float",
+   "label": "Gusset (mm)"
+  },
+  {
+   "fieldname": "column_break_fpka",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "print_area_width_mm",
+   "fieldtype": "Float",
+   "label": "Print Area Width (mm)",
+   "reqd": 1
+  },
+  {
+   "fieldname": "print_area_height_mm",
+   "fieldtype": "Float",
+   "label": "Print Area Height (mm)",
+   "reqd": 1
+  },
+  {
+   "fieldname": "orientation",
+   "fieldtype": "Select",
+   "label": "Orientation",
+   "options": "\nFront\nBack\nLeft\nRight\nWrap",
+   "reqd": 1
+  },
+  {
+   "fieldname": "repeat_length_mm",
+   "fieldtype": "Float",
+   "label": "Repeat Length (mm)"
+  },
+  {
+   "fieldname": "repeat_width_mm",
+   "fieldtype": "Float",
+   "label": "Repeat Width (mm)"
+  },
+  {
+   "fieldname": "bleed_mm",
+   "fieldtype": "Float",
+   "label": "Bleed (mm)"
+  },
+  {
+   "fieldname": "trap_mm",
+   "fieldtype": "Float",
+   "label": "Trap (mm)"
+  },
+  {
+   "default": "0",
+   "fieldname": "registration_on_marks",
+   "fieldtype": "Check",
+   "label": "Registration on Marks"
+  },
+  {
+   "fieldname": "tab_3_tab",
+   "fieldtype": "Tab Break",
+   "label": "Master Files Renders"
+  },
+  {
+   "fieldname": "source_file",
+   "fieldtype": "Attach",
+   "label": "Source File",
+   "reqd": 1
+  },
+  {
+   "fieldname": "print_ready_pdf",
+   "fieldtype": "Attach",
+   "label": "Print Ready PDF",
+   "reqd": 1
+  },
+  {
+   "fieldname": "preview_image",
+   "fieldtype": "Attach",
+   "label": "Preview Image"
+  },
+  {
+   "fieldname": "color_separations",
+   "fieldtype": "Attach",
+   "label": "Color Separations"
+  },
+  {
+   "fieldname": "fonts_package",
+   "fieldtype": "Attach",
+   "label": "Fonts Package"
+  },
+  {
+   "fieldname": "cylinder_layout",
+   "fieldtype": "Attach",
+   "label": "Cylinder Layout"
+  },
+  {
+   "fieldname": "column_break_preh",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "preflight_state",
+   "fieldtype": "Select",
+   "label": "Preflight State",
+   "options": "\nPending\nPassed\nFailed",
+   "reqd": 1
+  },
+  {
+   "fieldname": "preflight_score",
+   "fieldtype": "Int",
+   "label": "Preflight Score"
+  },
+  {
+   "fieldname": "color_tab",
+   "fieldtype": "Tab Break",
+   "label": "Color"
+  },
+  {
+   "fieldname": "color_spec",
+   "fieldtype": "Table",
+   "label": "Color Spec",
+   "options": "Artwork Color Spec"
+  },
+  {
+   "fieldname": "versioning_tab",
+   "fieldtype": "Tab Break",
+   "label": "Versioning"
+  },
+  {
+   "fieldname": "version",
+   "fieldtype": "Table",
+   "label": "Version",
+   "options": "Artwork Version Child"
+  }
+ ],
+ "grid_page_length": 50,
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2025-10-07 13:22:58.360640",
+ "modified_by": "Administrator",
+ "module": "Woven App",
+ "name": "Artwork Version",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "row_format": "Dynamic",
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

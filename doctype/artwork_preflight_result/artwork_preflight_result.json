@@ -1,0 +1,46 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2025-10-11 17:59:22.580933",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "format",
+  "size",
+  "color_space"
+ ],
+ "fields": [
+  {
+   "fieldname": "format",
+   "fieldtype": "Select",
+   "label": "Format",
+   "options": "\nPass\nFail"
+  },
+  {
+   "fieldname": "size",
+   "fieldtype": "Select",
+   "label": "Size"
+  },
+  {
+   "fieldname": "color_space",
+   "fieldtype": "Select",
+   "label": "Color Space",
+   "options": "\nPass\nFail"
+  }
+ ],
+ "grid_page_length": 50,
+ "index_web_pages_for_search": 1,
+ "istable": 1,
+ "links": [],
+ "modified": "2025-10-11 18:02:34.319562",
+ "modified_by": "Administrator",
+ "module": "Woven App",
+ "name": "Artwork Preflight Result",
+ "owner": "Administrator",
+ "permissions": [],
+ "row_format": "Dynamic",
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

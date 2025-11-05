@@ -1,0 +1,39 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2025-09-23 15:50:49.306412",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "form_factor",
+  "column_break_mrsy"
+ ],
+ "fields": [
+  {
+   "fieldname": "form_factor",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Type",
+   "options": "\nOpen Mouth\nValve Bag\nBlock Bottom Open\nBlock-Bottom (ADSTAR) - AD Star Machine Selection\nDrawstring\nCourier Flap\nLeno Mesh"
+  },
+  {
+   "fieldname": "column_break_mrsy",
+   "fieldtype": "Column Break"
+  }
+ ],
+ "grid_page_length": 50,
+ "index_web_pages_for_search": 1,
+ "istable": 1,
+ "links": [],
+ "modified": "2025-09-30 17:33:28.927618",
+ "modified_by": "Administrator",
+ "module": "Woven App",
+ "name": "Structure",
+ "owner": "Administrator",
+ "permissions": [],
+ "row_format": "Dynamic",
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

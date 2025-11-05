@@ -1,0 +1,90 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2025-10-07 12:28:00.266852",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "sequence",
+  "color_name",
+  "pantone_ref",
+  "ink_system",
+  "coverage",
+  "column_break_tldh",
+  "screen_lpi",
+  "screen_angle",
+  "\u03b4e00_max",
+  "notes"
+ ],
+ "fields": [
+  {
+   "fieldname": "sequence",
+   "fieldtype": "Int",
+   "in_list_view": 1,
+   "label": "Sequence",
+   "reqd": 1
+  },
+  {
+   "fieldname": "color_name",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Color Name",
+   "reqd": 1
+  },
+  {
+   "fieldname": "pantone_ref",
+   "fieldtype": "Text",
+   "label": "Pantone Ref"
+  },
+  {
+   "fieldname": "ink_system",
+   "fieldtype": "Select",
+   "label": "Ink System",
+   "options": "\nPU\nNC\nSolvent\nWater"
+  },
+  {
+   "fieldname": "screen_lpi",
+   "fieldtype": "Int",
+   "label": "Screen (LPI)"
+  },
+  {
+   "fieldname": "screen_angle",
+   "fieldtype": "Int",
+   "label": "Screen Angle"
+  },
+  {
+   "fieldname": "\u03b4e00_max",
+   "fieldtype": "Float",
+   "label": "\u0394E00 Max"
+  },
+  {
+   "fieldname": "coverage",
+   "fieldtype": "Float",
+   "label": "Coverage (%)"
+  },
+  {
+   "fieldname": "notes",
+   "fieldtype": "Small Text",
+   "label": "Notes"
+  },
+  {
+   "fieldname": "column_break_tldh",
+   "fieldtype": "Column Break"
+  }
+ ],
+ "grid_page_length": 50,
+ "index_web_pages_for_search": 1,
+ "istable": 1,
+ "links": [],
+ "modified": "2025-10-11 17:40:49.962120",
+ "modified_by": "Administrator",
+ "module": "Woven App",
+ "name": "Artwork Color Spec",
+ "owner": "Administrator",
+ "permissions": [],
+ "row_format": "Dynamic",
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}
