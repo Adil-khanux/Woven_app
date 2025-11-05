@@ -7,7 +7,6 @@ def get_customer_credit_info(customer, company):
     
     # Initialize credit limit
     credit_limit = 0
-    
     # Get credit limit for the specific company
     for limit in customer_doc.credit_limits:
         if limit.company == company:
@@ -23,9 +22,8 @@ def get_customer_credit_info(customer, company):
 
     # Credit balance
     credit_balance = credit_limit - total_unpaid
-
     return {
         "custom_credit_limit": credit_limit,
         "custom_total_unpaid": total_unpaid,
-        "custom_credit_balance": credit_balance
+        "custom_credit_balance": credit_balance,
     }
