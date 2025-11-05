@@ -1,7 +1,7 @@
 frappe.ui.form.on('Quotation', {
     validate: function(frm) {
         let any_below_price = false;
-
+        
                 // Loop through each child table row
         for (let item of frm.doc.items) {
             if (item.rate < item.price_list_rate) {

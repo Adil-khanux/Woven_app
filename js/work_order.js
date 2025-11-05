@@ -7,7 +7,11 @@ frappe.ui.form.on("Work Order", {
     },
     qty: function(frm) {
         update_additional_cost_amounts(frm);
+    },
+    sales_order: function(frm){
+        sales_order_qty(frm)
     }
+    
 });
 
 function trigger_additional_cost_and_specs(frm) {
@@ -57,6 +61,32 @@ function update_additional_cost_amounts(frm) {
     frm.refresh_field("custom_additional_cost");
 }
 
+// Calculate Quantity to manufacturing from sales order on select sales order
+frappe.ui.form.on("Work Order", {
+    sales_order: function(frm) {
+        fetch_qty_from_sales_order(frm);
+    },
+    production_item: function(frm) {
+        fetch_qty_from_sales_order(frm);
+    }
+});
+
+function sales_order_qty(frm) {
+    if (frm.doc.sales_order && frm.doc.production_item) {
+        frappe.model.with_doc("Sales Order", frm.doc.sales_order, function() {
+            let so_doc = frappe.model.get_doc("Sales Order", frm.doc.sales_order);
+
+            let matched_row = so_doc.items.find(row => row.item_code === frm.doc.production_item);
+
+            if (matched_row) {
+                frm.set_value("qty", matched_row.qty);
+                // frappe.msgprint(__("Quantity fetched from Sales Order for item: {0} → {1}", [matched_row.item_code, matched_row.qty]));
+            } else {
+                frappe.msgprint(__("No matching item found in Sales Order for {0}", [frm.doc.production_item]));
+            }
+        });
+    }
+}
 
 
 
