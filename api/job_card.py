@@ -1,6 +1,8 @@
 import frappe
 from frappe import _
 from frappe.utils import now_datetime
+import hashlib
+import re
 
 @frappe.whitelist()
 def create_timesheets_from_jobcard(job_card):
@@ -36,31 +38,39 @@ def create_timesheets_from_jobcard(job_card):
     frappe.db.commit()
     return {"status": "success"}
 
+# ------------------------ Copy Expexted Start Date into Schedule Date on Work Order Submit ------------------------------
+
+def copy_expected_start_date(doc, method):
+
+    # Fetch all job cards linked with this work order
+    job_cards = frappe.get_all( "Job Card", filters={"work_order": doc.name}, fields=["name", "expected_start_date"] )
+
+    # If no job card found
+    if not job_cards:
+        return
+
+    for jc in job_cards:
+        frappe.db.set_value("Job Card",jc.name,"custom_schedule_date",jc.expected_start_date )
+
+
 #------------------------- JOB CARD ADD SCRAP ITEMS --------------------
 def add_scrap_items(doc, method):
-    frappe.msgprint("✅ Function called: add_scrap_items")
-
     """
     Copy scrap items from the linked BOM to the Job Card,
     but only for scrap rows that match the Job Card's operation.
     """
-
     # Step 1: Check required fields
     if not doc.bom_no or not doc.operation:
-        frappe.msgprint("⚠️ Missing BOM or Operation — skipping function.")
         return
 
     try:
         # Step 2: Get BOM document
         bom = frappe.get_doc("BOM", doc.bom_no)
-        frappe.msgprint(f"📘 BOM fetched: {bom.name}")
 
-        # Debugging info — show how many scrap items found in BOM
-        frappe.msgprint(f"🧾 BOM Scrap Items Count: {len(bom.scrap_items)}")
-        for s in bom.scrap_items:
-            frappe.msgprint(f"➡️ BOM Scrap Operation: {s.operation}, Item: {s.item_code}")
-
-        frappe.msgprint(f"🧩 Job Card Operation: {doc.operation}")
+        # # Debugging info — show how many scrap items found in BOM
+        # frappe.msgprint(f"🧾 BOM Scrap Items Count: {len(bom.scrap_items)}")
+        # for s in bom.scrap_items:
+        #     frappe.msgprint(f"➡️ BOM Scrap Operation: {s.operation}, Item: {s.item_code}")
 
         # Step 3: Clear existing scrap items
         doc.scrap_items = []
@@ -69,27 +79,19 @@ def add_scrap_items(doc, method):
         matched_scraps = [row for row in bom.scrap_items if row.operation == doc.operation]
 
         if not matched_scraps:
-            frappe.msgprint(f"⚠️ No scrap items found in BOM <b>{doc.bom_no}</b> for operation <b>{doc.operation}</b>")
             return
-
-        frappe.msgprint(f"✅ Found {len(matched_scraps)} matching scrap items.")
 
         # Step 5: Append matched scraps to Job Card
         for scrap in matched_scraps:
             doc.append("scrap_items", {
                 "item_code": scrap.item_code,
                 "item_name": scrap.item_name,
-                "stock_qty": scrap.stock_qty,
+                "expected_qty": scrap.stock_qty,
                 "stock_uom": scrap.stock_uom,
             })
-            frappe.msgprint(f"🟢 Added Scrap Item: {scrap.item_code} ({scrap.item_name})")
-
-        frappe.msgprint(f"🎯 Scrap items added successfully from BOM <b>{doc.bom_no}</b> for operation <b>{doc.operation}</b>")
 
     except Exception as e:
         frappe.log_error(frappe.get_traceback(), "Error in add_scrap_items for Job Card")
-        frappe.msgprint(f"❌ Error occurred in add_scrap_items: {e}")
-
 
 
 # -------------------------------------------------------------------------------------------------------------------
@@ -99,6 +101,7 @@ def update_sales_order_progress(doc, method):
     HOOK: Triggered after a Job Card is created, saved, submitted, or cancelled.
     Updates the HTML field 'custom_progress_status' in the linked Sales Order.
     """
+
     if not doc.work_order:
         frappe.msgprint("Work Order Not created")
         return
@@ -114,13 +117,13 @@ def update_sales_order_progress(doc, method):
     # Update Sales Order HTML field
     frappe.db.set_value("Sales Order", sales_order, "custom_progress", html)
     frappe.db.commit()
-
+    
 
 def get_manufacturing_progress(sales_order):
     """
     Generates an HTML table with progress bars for all Job Cards linked to a Sales Order.
     """
-
+  
     job_cards = frappe.db.sql("""
         SELECT
             jc.name AS job_card,
@@ -166,7 +169,7 @@ def get_manufacturing_progress(sales_order):
             color = "bg-danger"
 
         html += f"""
-        <tr>
+        <tr heigh>
             <td>{jc.operation}</td>
             <td><a href='/app/job-card/{jc.job_card}' target='_blank'>{jc.job_card}</a></td>
             <td>{jc.status}</td>
@@ -183,7 +186,133 @@ def get_manufacturing_progress(sales_order):
         """
 
     html += "</tbody></table>"
+    
     return html
 
+#################GENERARE HASH ID FOR JOB CARD#####################
+def generate_parameter_hash(doc, method=None):
+    # 1. Validation: Ensure child table exists and isn't empty
+    if not doc.get("custom_job_card_parameters"):
+        doc.custom_group_hash = ""
+        return
+
+    # 2. Collect and Sort Parameters for deterministic hashing
+    param_list = []
+    param_display = [] # For the Remarks field
+    
+    for row in doc.custom_job_card_parameters:
+        if row.parameters and row.parameters_value:
+            p_name = str(row.parameters).strip().lower() 
+            p_val = str(row.parameters_value).strip().lower()
+            
+            param_list.append(f"{p_name}:{p_val}")
+            # Format for Remarks: "Parameter: Value"
+            param_display.append(f"{row.parameters}: {row.parameters_value}")
+
+    if not param_list:
+        return
+
+    # Sort to ensure "Width:10|Denier:1000" always matches "Denier:1000|Width:10"
+    param_list.sort()
+    param_display.sort()
+
+    # 3. Add Workstation (Must match fieldname 'workstation')
+    # Use doc.workstation because jobs on different machines cannot be "common"
+    base_string = f"WS:{doc.workstation}|" + "|".join(param_list)
+
+    # 4. Generate & Assign Hash
+    hash_object = hashlib.md5(base_string.encode())
+    doc.custom_group_hash = hash_object.hexdigest()[:12]
+
+    # Build key: value block
+    param_block = "\n".join(param_display)
 
 
+    # Replace existing key:value block if present
+    pattern = r"(^|\n)([A-Za-z0-9 _/.-]+:\s.*\n?)+"
+
+
+    if re.search(pattern, doc.remarks or ""):
+        doc.remarks = re.sub(
+        pattern,
+        "\n" + param_block + "\n",
+        doc.remarks,
+        flags=re.MULTILINE
+        ).strip()
+    else:
+    # Prepend if not present
+        doc.remarks = param_block + "\n\n" + (doc.remarks or "").strip()
+
+#############ADD PARAMETERS FROM BOM#################
+def add_bom_param(doc, method=None):
+    # Check BOM is linked
+    if not doc.bom_no:
+        return
+
+    # Fetch linked BOM
+    bom = frappe.get_doc("BOM", doc.bom_no)
+
+    # Clear Job Card parameters to avoid duplicates
+    doc.custom_job_card_parameters = []
+
+    # Append Bom parameters into Job Card
+    for row in bom.custom_job_card_parameters:
+        doc.append("custom_job_card_parameters", {
+            "operation": row.operation,
+            "parameters": row.parameters,
+            "parameters_value": row.parameters_value
+        })
+
+############## Work Order Auto Complete when Last Job Card will complete #################################
+def work_order_complete(doc, method=None):
+    frappe.msgprint("Function Call")
+
+    if not doc.work_order:
+        return
+    work_order_id = doc.work_order
+    work_ord = frappe.get_doc("Work Order", work_order_id)
+    frappe.msgprint("Work order Access")
+    # Get all sequence_ids from Work Order operations
+    sequence_ids = [op.sequence_id for op in work_ord.operations]
+    frappe.msgprint("get all sequence id ")
+    if not sequence_ids:
+        return
+    
+    max_sequence_id = max(sequence_ids)
+    frappe.msgprint("Get Max Seq Id")
+      # Only when last operation job card is submitted
+    if doc.sequence_id != max_sequence_id:
+        return
+
+    # --- AUTO FINISH WORK ORDER ---
+    if work_ord.status != "Completed":
+        work_ord.db_set("status", "Completed")
+        frappe.db.commit()
+    frappe.msgprint("Work Order Finish Successfully")
+    
+    # ---- Call Stock AUTO STOCK ENTRY ----
+    create_and_submit_stock_entry(work_order_id)
+
+################ Create and zSubmit Auto Stock Entry ###########################
+def create_and_submit_stock_entry(work_order_id):
+   
+    if frappe.db.exists(
+        "Stock Entry",
+        {
+            "work_order": work_order_id,
+            "docstatus": 1,
+            "purpose": "Manufacture"
+        }
+    ):
+        return
+
+    se_dict = frappe.call(
+        "erpnext.manufacturing.doctype.work_order.work_order.make_stock_entry",
+        work_order_id=work_order_id,
+        purpose="Manufacture"
+    )
+
+    se = frappe.get_doc(se_dict)
+    se.insert(ignore_permissions=True)
+    se.submit()
+    frappe.msgprint("STock Entry Create Succesfully")
