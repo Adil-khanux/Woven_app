@@ -150,15 +150,13 @@ def weaving_output_calculation(doc):
 ######################### New Item Create #############################################################
 def create_item(doc, method=None):
    
-    ######################### 1.check in bom denier & Item is exist or not ############################
+    # 1.check in bom denier & Item is exist or not 
     if not doc.item or not doc.custom_denier > 0 :
         frappe.msgprint("Not Found")
         return
-    
-    ########################## 2.Fetch parameters from linked Item ################################
     parent_item = frappe.get_doc("Item", doc.item)
     
-    # ####################################🔹3. Build Item Name Parts ##########################
+    #🔹3. Build Item Name Parts 
     name_parts = [
             parent_item.name,
             f"{flt(parent_item.custom_transparency)}T" if parent_item.custom_transparency else None,
@@ -167,50 +165,26 @@ def create_item(doc, method=None):
             f"{parent_item.custom_color}C" if parent_item.custom_color else None,
             f"{int(parent_item.custom_no_of_colors)}C" if parent_item.custom_no_of_colors else None,
         ]
-
-    ############################## 🔹4 Join only valid values  ######################################
     new_item_name = " | ".join(filter(None, name_parts))
-
-    # ####################### 5.set Item Name  ###############################
     new_item_code = new_item_name.replace(" ", "-").upper()
-    frappe.msgprint(f"Perfectly Set Name for Item: {new_item_name}")
-
-
-    ############################## 7.check new item exist or not ##################################
     
    # 4. Check Existence to prevent duplicate creation
     if frappe.db.exists("Item", new_item_code):
         if doc.custom_item_names != new_item_code:
             doc.custom_item_names = new_item_code
         return
-    frappe.msgprint("Create New Item Name")
     
-    ############## 8. now create new item #########################
     new_item = frappe.copy_doc(parent_item)
-    
     new_item.item_code = new_item_code
     new_item.item_group = "Tape"
     new_item.is_sales_item = 0
-
-    # ######################## Set parameters ###############################
-    # new_item.custom_deniers = doc.custom_denier
-    # new_item.custom_panton_shade = parent_item.custom_panton_shade
-    # new_item.custom_color = parent_item.custom_color
-    # new_item.custom_transparency = parent_item.custom_transparency
-    # new_item.custom_no_of_colors = parent_item.custom_no_of_colors
-    # instead create new item and copy field one by one we use copy_doc to copy parent doc as it##########################
-
     new_item.insert(ignore_permissions=True)
-
     doc.custom_item_names = new_item.item_code
-
-    frappe.msgprint(f"Item Create Successfully : {new_item}" )
-
-
+   
+##################### Parent Function of create Raw Materials Sub BOM Cycle #######################
 def execute_bom_automation(doc, method=None):
-
     target_operations = ["Printing", "Weaving", "Lamination", "Extrusion"]
-    
+   
     # 2. Grouping Logic
     op_groups = {}
     for row in doc.items:
@@ -231,16 +205,15 @@ def execute_bom_automation(doc, method=None):
         if processed_ops:
             finalize_parent_bom(doc, processed_ops)
 
+######################## Create Raw Materials Sub BOM ##############################
 def create_bom(doc, operation_name, rm_rows):
     # Create new BOM document
     sub_bom = frappe.new_doc("BOM")
     
-    # SFG item from your custom field
     sub_bom.item = doc.custom_item_names 
     sub_bom.quantity = doc.quantity
     sub_bom.with_operations = 1
     
-    # Copy Custom Fields
     fields_to_copy = [
         "custom_denier", "custom_film_width", "custom_spacer", "custom_no_of_tape_lost",
         "custom_line_speed", "custom_divisor", "custom_tape_width", "custom_no_of_tapes",
@@ -273,16 +246,18 @@ def create_bom(doc, operation_name, rm_rows):
             "stock_uom": rm.stock_uom,
             "conversion_factor": rm.conversion_factor or 1
         })
+    
             
     sub_bom.insert(ignore_permissions=True)
     # sub_bom.submit()
     return sub_bom
 
+################## Add New Create Item In BOM items ####################################
 def add_sub_assembly_to_parent(doc, operation_name, sb):
    
     new_row = doc.append("items", {
         "item_code": doc.custom_item_names,
-        "qty": 1, # Usually SFG is 1 per assembly
+        "qty": 1, 
         "bom_no": sb.name,
         "operation": operation_name,
         "uom": doc.uom,
@@ -292,9 +267,10 @@ def add_sub_assembly_to_parent(doc, operation_name, sb):
     })     
     new_row.set("is_new_assembly", True)
     new_row.save(ignore_permissions=True)
-   
+    
+##################### Remove Raw Material that moved into Sub BOM ##################
 def finalize_parent_bom(doc, processed_ops):
-    frappe.msgprint("Function Call")
+    
     # Keep only the new assemblies and items that weren't in the processed operations
     doc.items = [
         row for row in doc.items 
